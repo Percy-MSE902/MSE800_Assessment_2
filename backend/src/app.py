@@ -35,7 +35,7 @@ def include_routers_from_folder(folder: str = "api"):
         return
 
     for file_path in routers_path.glob("*.py"):
-        if file_path.name == "__init__.py":
+        if file_path.name == "__init__.py" or file_path.name == "auth.py":
             continue
 
         module_name = f"app.{folder}.{file_path.stem}"

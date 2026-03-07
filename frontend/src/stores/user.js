@@ -15,10 +15,14 @@ export const useUserStore = defineStore('user', () => {
     formData.append('password', password)
 
     const res = await authApi.login(formData)
+    
+    if (res.requires_2fa) {
+      return res
+    }
+    
     token.value = res.access_token
     localStorage.setItem('token', res.access_token)
     
-    // Fetch user info from backend
     try {
       const users = await userApi.list()
       const currentUser = users.find(u => u.username === username)
@@ -29,20 +33,43 @@ export const useUserStore = defineStore('user', () => {
           role: currentUser.role 
         }
       } else {
-        // Fallback: decode JWT to get username
         const payload = JSON.parse(atob(res.access_token.split('.')[1]))
         userInfo.value = { username: payload.sub, role: 'guest' }
       }
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     } catch (e) {
       console.error('Failed to fetch user info:', e)
-      // Fallback: decode JWT
       const payload = JSON.parse(atob(res.access_token.split('.')[1]))
       userInfo.value = { username: payload.sub, role: 'guest' }
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     }
     
     return res
+  }
+
+  async function getUserInfo() {
+    try {
+      const users = await userApi.list()
+      const storedToken = localStorage.getItem('token')
+      if (!storedToken) return
+      
+      const payload = JSON.parse(atob(storedToken.split('.')[1]))
+      const username = payload.sub
+      
+      const currentUser = users.find(u => u.username === username)
+      if (currentUser) {
+        userInfo.value = { 
+          id: currentUser.id,
+          username: currentUser.username, 
+          role: currentUser.role 
+        }
+      } else {
+        userInfo.value = { username: username, role: 'guest' }
+      }
+      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+    } catch (e) {
+      console.error('Failed to fetch user info:', e)
+    }
   }
 
   function logout() {
@@ -57,6 +84,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     isLoggedIn,
     login,
+    getUserInfo,
     logout
   }
 })

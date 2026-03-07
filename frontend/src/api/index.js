@@ -1,5 +1,7 @@
 import request from './request'
 
+export { request }
+
 export const authApi = {
   login: (data) => request.post('/api/auth/login', data, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -78,10 +80,9 @@ export const orderPhotoApi = {
 }
 
 export const notificationApi = {
-  list: () => request.get('/api/notification/'),
+  list: (params) => request.get('/api/notification/paginated', { params }),
   getUnreadCount: () => request.get('/api/notification/unread-count'),
   markAsRead: (id) => request.post(`/api/notification/${id}/read`),
   markAllAsRead: () => request.post('/api/notification/read-all'),
   delete: (id) => request.delete(`/api/notification/${id}`),
-  list: (params) => request.get('/api/notification/', { params }),
 }

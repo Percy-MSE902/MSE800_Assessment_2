@@ -19,6 +19,8 @@ class UserModel(Base):
     phone: Mapped[str] = mapped_column(String(20), nullable=True)
     role: Mapped[str] = mapped_column(String(20), nullable=False, default='guest')
     status: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    totp_secret: Mapped[str] = mapped_column(String(32), nullable=True)
+    is_2fa_enabled: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     create_time: Mapped[DateTime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     modify_time: Mapped[DateTime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

@@ -3,14 +3,31 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
+import { request } from '@/api'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(false)
+const isRegisterMode = ref(false)
+const show2FA = ref(false)
+const qrCode = ref('')
+const verifyCode = ref('')
+const tempToken = ref('')
+const tempUsername = ref('')
+const tempPassword = ref('')
+
 const loginForm = ref({
   username: '',
   password: ''
+})
+
+const registerForm = ref({
+  username: '',
+  password: '',
+  full_name: '',
+  email: '',
+  enable_2fa: false
 })
 
 const handleLogin = async () => {
@@ -21,14 +38,121 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    await userStore.login(loginForm.value.username, loginForm.value.password)
-    ElMessage.success('Login successful')
-    router.push('/')
-  } catch (error) {
-    console.error(error)
+    const res = await request.post('/api/auth/login', 
+      new URLSearchParams({
+        username: loginForm.value.username,
+        password: loginForm.value.password
+      }), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    
+    if (res.requires_2fa) {
+      tempToken.value = res.access_token
+      show2FA.value = true
+    } else {
+      localStorage.setItem('token', res.access_token)
+      if (res.user_info) {
+        userStore.userInfo = res.user_info
+        localStorage.setItem('userInfo', JSON.stringify(res.user_info))
+      } else {
+        const payload = JSON.parse(atob(res.access_token.split('.')[1]))
+        userStore.userInfo = { username: payload.sub, role: 'guest' }
+        localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
+      }
+      ElMessage.success('Login successful')
+      router.push('/')
+    }
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.detail || 'Login failed')
   } finally {
     loading.value = false
   }
+}
+
+const handleVerify2FA = async () => {
+  if (!verifyCode.value) {
+    ElMessage.warning('Please enter verification code')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await request.post('/api/auth/login-with-2fa', {
+      username: loginForm.value.username,
+      password: loginForm.value.password,
+      code: verifyCode.value
+    })
+    
+    localStorage.setItem('token', res.access_token)
+    ElMessage.success('Login successful')
+    router.push('/')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.detail || 'Invalid verification code')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegister = async () => {
+  if (!registerForm.value.username || !registerForm.value.password) {
+    ElMessage.warning('Please enter username and password')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await request.post('/api/auth/register', registerForm.value)
+    
+    if (res.requires_2fa) {
+      qrCode.value = res.qr_code
+      tempUsername.value = registerForm.value.username
+      tempPassword.value = registerForm.value.password
+      show2FA.value = true
+    } else {
+      ElMessage.success('Registration successful')
+      localStorage.setItem('token', res.temp_token)
+      router.push('/')
+    }
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.detail || 'Registration failed')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleVerifyRegister = async () => {
+  if (!verifyCode.value) {
+    ElMessage.warning('Please enter verification code')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await request.post('/api/auth/verify-2fa', null, {
+      params: {
+        username: tempUsername.value,
+        code: verifyCode.value
+      }
+    })
+    
+    ElMessage.success('Registration successful! Please login.')
+    isRegisterMode.value = false
+    show2FA.value = false
+    verifyCode.value = ''
+    loginForm.value.username = tempUsername.value
+    loginForm.value.password = tempPassword.value
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.detail || 'Invalid verification code')
+  } finally {
+    loading.value = false
+  }
+}
+
+const toggleMode = () => {
+  isRegisterMode.value = !isRegisterMode.value
+  show2FA.value = false
+  verifyCode.value = ''
+  qrCode.value = ''
 }
 </script>
 
@@ -38,10 +162,43 @@ const handleLogin = async () => {
       <div class="login-header">
         <el-icon class="logo-icon"><House /></el-icon>
         <h1>Housekeeping System</h1>
-        <p>Management Portal</p>
+        <p>{{ isRegisterMode ? 'Create Account' : 'Management Portal' }}</p>
       </div>
 
-      <el-form :model="loginForm" class="login-form" @submit.prevent="handleLogin">
+      <!-- 2FA Verification -->
+      <div v-if="show2FA" class="verify-2fa">
+        <div class="qr-code-container" v-if="qrCode">
+          <p>Scan QR Code with Authenticator App</p>
+          <img :src="qrCode" alt="QR Code" class="qr-code" />
+          <p class="hint">Then enter the code below</p>
+        </div>
+        <p v-else>Enter verification code from your authenticator app</p>
+        
+        <el-input
+          v-model="verifyCode"
+          placeholder="Verification Code"
+          size="large"
+          class="verify-input"
+          @keyup.enter="qrCode ? handleVerifyRegister() : handleVerify2FA()"
+        />
+        
+        <el-button
+          type="primary"
+          size="large"
+          :loading="loading"
+          class="login-button"
+          @click="qrCode ? handleVerifyRegister() : handleVerify2FA()"
+        >
+          Verify
+        </el-button>
+        
+        <div class="toggle-mode">
+          <el-button link @click="toggleMode">Back to {{ isRegisterMode ? 'Login' : 'Register' }}</el-button>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <el-form v-else-if="!isRegisterMode" :model="loginForm" class="login-form" @submit.prevent="handleLogin">
         <el-form-item>
           <el-input
             v-model="loginForm.username"
@@ -72,6 +229,68 @@ const handleLogin = async () => {
             Login
           </el-button>
         </el-form-item>
+        
+        <div class="toggle-mode">
+          <span>Don't have an account? </span>
+          <el-button link type="primary" @click="toggleMode">Register</el-button>
+        </div>
+      </el-form>
+
+      <!-- Register Form -->
+      <el-form v-else :model="registerForm" class="login-form" @submit.prevent="handleRegister">
+        <el-form-item>
+          <el-input
+            v-model="registerForm.username"
+            placeholder="Username"
+            prefix-icon="User"
+            size="large"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-input
+            v-model="registerForm.password"
+            type="password"
+            placeholder="Password"
+            prefix-icon="Lock"
+            size="large"
+            show-password
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-input
+            v-model="registerForm.full_name"
+            placeholder="Full Name"
+            prefix-icon="UserFilled"
+            size="large"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-input
+            v-model="registerForm.email"
+            placeholder="Email"
+            prefix-icon="Message"
+            size="large"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="registerForm.enable_2fa">Enable Two-Factor Authentication</el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            size="large"
+            :loading="loading"
+            class="login-button"
+            @click="handleRegister"
+          >
+            Register
+          </el-button>
+        </el-form-item>
+        
+        <div class="toggle-mode">
+          <span>Already have an account? </span>
+          <el-button link type="primary" @click="toggleMode">Login</el-button>
+        </div>
       </el-form>
 
       <div class="login-footer">
@@ -177,10 +396,46 @@ const handleLogin = async () => {
   box-shadow: 0 8px 20px rgba(64, 158, 255, 0.4);
 }
 
+.toggle-mode {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #606266;
+}
+
 .login-footer {
   text-align: center;
   margin-top: 24px;
   font-size: 13px;
   color: #909399;
+}
+
+.verify-2fa {
+  text-align: center;
+}
+
+.verify-2fa p {
+  color: #606266;
+  margin-bottom: 20px;
+}
+
+.qr-code-container {
+  margin-bottom: 20px;
+}
+
+.qr-code {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.hint {
+  font-size: 12px;
+  color: #909399;
+}
+
+.verify-input {
+  margin-bottom: 20px;
 }
 </style>

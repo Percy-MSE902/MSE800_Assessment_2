@@ -93,8 +93,8 @@ const fetchNotifications = async () => {
 
 const fetchNotificationList = async () => {
   try {
-    const res = await notificationApi.list()
-    notificationList.value = res || []
+    const res = await notificationApi.list({ page: 1, page_size: 10 })
+    notificationList.value = res?.items || []
   } catch (e) {
     notificationList.value = []
   }

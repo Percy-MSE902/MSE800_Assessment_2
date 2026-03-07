@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
+import math
 
 from database import get_db
 from models.user import UserModel
@@ -33,6 +34,36 @@ class NotificationCreateSchema(BaseModel):
     content: Optional[str] = None
     type: str = 'info'
     link_url: Optional[str] = None
+
+
+@router.get('/paginated')
+def get_notifications_paginated(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    type: Optional[str] = Query(None),
+    is_read: Optional[int] = Query(None),
+    title: Optional[str] = Query(None),
+    current_user: UserModel = Depends(require_permission()),
+    db: Session = Depends(get_db)
+):
+    query = db.query(NotificationModel).filter(NotificationModel.user_id == current_user.id)
+    
+    if type:
+        query = query.filter(NotificationModel.type == type)
+    if is_read is not None:
+        query = query.filter(NotificationModel.is_read == is_read)
+    if title:
+        query = query.filter(NotificationModel.title.like(f'%{title}%'))
+    
+    total = query.count()
+    items = query.order_by(NotificationModel.create_time.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    
+    return {
+        "current_page": page,
+        "page_total": math.ceil(total / page_size) if page_size > 0 else 0,
+        "total": total,
+        "items": [NotificationSchema.model_validate(item, from_attributes=True) for item in items]
+    }
 
 
 @router.get('/', response_model=List[NotificationSchema])
