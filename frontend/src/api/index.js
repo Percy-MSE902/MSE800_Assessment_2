@@ -86,3 +86,11 @@ export const notificationApi = {
   markAllAsRead: () => request.post('/api/notification/read-all'),
   delete: (id) => request.delete(`/api/notification/${id}`),
 }
+
+export const portalApi = {
+  getServices: () => request.get('/api/portal/services'),
+  getRooms: () => request.get('/api/portal/rooms'),
+  createOrder: (data) => request.post('/api/portal/order', data),
+  getOrders: (phone) => request.get(`/api/portal/orders/${phone}`),
+  getStats: () => request.get('/api/portal/stats'),
+}

@@ -2,6 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
+    path: '/',
+    name: 'Portal',
+    component: () => import('@/views/Portal.vue'),
+    meta: { title: '洁到位 - 专业酒店清洁服务' }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
@@ -14,10 +20,10 @@ const routes = [
     meta: { title: 'Home', requiresAuth: true }
   },
   {
-    path: '/dashboard',
+    path: '/home',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
-    meta: { title: 'Dashboard', requiresAuth: true }
+    meta: { title: 'Home', requiresAuth: true }
   },
   {
     path: '/users',
@@ -82,10 +88,10 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.meta.requiresAuth && !token) {
+  if (to.path === '/login' && token) {
+    next('/dashboard')
+  } else if (to.meta.requiresAuth && !token) {
     next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/')
   } else {
     next()
   }

@@ -9,7 +9,10 @@ import { useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 
 const route = useRoute()
-const showNavBar = computed(() => route.path !== '/login')
+const showNavBar = computed(() => {
+  const noNavPaths = ['/login', '/', '/home']
+  return !noNavPaths.includes(route.path)
+})
 </script>
 
 <style>

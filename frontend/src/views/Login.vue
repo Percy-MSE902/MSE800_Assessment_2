@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 import { request } from '@/api'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const loading = ref(false)
@@ -13,6 +14,12 @@ const isRegisterMode = ref(false)
 const show2FA = ref(false)
 const qrCode = ref('')
 const verifyCode = ref('')
+
+onMounted(() => {
+  if (route.query.mode === 'register') {
+    isRegisterMode.value = true
+  }
+})
 const tempToken = ref('')
 const tempUsername = ref('')
 const tempPassword = ref('')
@@ -60,7 +67,12 @@ const handleLogin = async () => {
         localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
       }
       ElMessage.success('Login successful')
-      router.push('/')
+      const redirect = route.query.redirect
+      if (redirect === 'portal') {
+        router.push('/')
+      } else {
+        router.push('/home')
+      }
     }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Login failed')
@@ -85,7 +97,7 @@ const handleVerify2FA = async () => {
     
     localStorage.setItem('token', res.access_token)
     ElMessage.success('Login successful')
-    router.push('/')
+    router.push('/dashboard')
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Invalid verification code')
   } finally {
@@ -111,7 +123,7 @@ const handleRegister = async () => {
     } else {
       ElMessage.success('Registration successful')
       localStorage.setItem('token', res.temp_token)
-      router.push('/')
+      router.push('/dashboard')
     }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Registration failed')
