@@ -202,3 +202,61 @@ class ReviewCreateSchema(BaseModel):
     order_id: int
     rating: int
     comment: Optional[str] = None
+
+
+class NotificationSchema(BaseModel):
+    id: Optional[int] = None
+    user_id: int
+    title: str
+    content: Optional[str] = None
+    type: str = 'info'
+    link_url: Optional[str] = None
+    is_read: int = 0
+    create_time: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationCreateSchema(BaseModel):
+    user_id: int
+    title: str
+    content: Optional[str] = None
+    type: str = 'info'
+    link_url: Optional[str] = None
+
+
+class WalletSchema(BaseModel):
+    id: Optional[int] = None
+    user_id: int
+    balance: float
+    frozen_balance: float
+
+    class Config:
+        from_attributes = True
+
+
+class TransactionSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    order_id: Optional[int] = None
+    user_id: int
+    type: str
+    amount: Optional[float] = None
+    status: str
+    description: Optional[str] = None
+    create_time: Optional[str] = None
+
+
+class RechargeSchema(BaseModel):
+    amount: float
+
+
+class RateSchema(BaseModel):
+    rating: int
+    comment: Optional[str] = None
+
+
+class ReorderSchema(BaseModel):
+    photo_ids: list[int]

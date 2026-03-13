@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from cruds.CRUDBase import CRUDBase
-from models.service_order import OrderPhotoModel
+from model.service_order import OrderPhotoModel
 from schemas.housekeeping import OrderPhotoSchema, OrderPhotoCreateSchema
 from typing import Optional
 
@@ -31,14 +31,14 @@ class OrderPhotoService:
     def create(self, obj_in: OrderPhotoCreateSchema, uploaded_by: int):
         data = obj_in.dict()
         data['uploaded_by'] = uploaded_by
-        
+
         max_order = self.db.query(OrderPhotoModel).filter(
             OrderPhotoModel.order_id == obj_in.order_id,
             OrderPhotoModel.photo_type == obj_in.photo_type,
             OrderPhotoModel.is_deleted == 0
         ).count()
         data['sort_order'] = max_order
-        
+
         obj = OrderPhotoModel(**data)
         self.db.add(obj)
         self.db.commit()

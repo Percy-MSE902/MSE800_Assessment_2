@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from cruds.CRUDBase import CRUDBase
-from models.user_role import UserRoleModel
+from model.user_role import UserRoleModel
 from schemas.user_role import UserRoleSchema, UserRoleCreateSchema, UserRoleUpdateSchema
 
 # --------------------------------------------------

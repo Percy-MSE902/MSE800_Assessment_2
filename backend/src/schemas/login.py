@@ -17,3 +17,29 @@ class Token(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    enable_2fa: bool = False
+
+
+class TwoFactorResponse(BaseModel):
+    requires_2fa: bool
+    temp_token: Optional[str] = None
+    qr_code: Optional[str] = None
+    message: Optional[str] = None
+
+
+class LoginRequestJSON(BaseModel):
+    username: str
+    password: str
+
+
+class LoginWith2FARequest(BaseModel):
+    username: str
+    password: str
+    code: str

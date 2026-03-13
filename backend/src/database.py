@@ -2,46 +2,28 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from typing import Generator
+import os
 
 # Declarative base class
 class Base(DeclarativeBase):
     pass
 
-# Database configuration dictionary
-DATABASES = {
-    "mysql": {
-        "user": "root",
-        "password": "rootpassword",
-        "host": "127.0.0.1",
-        "port": "3306",
-        "db_name": "housekeeping",
-        "driver": "mysql+pymysql"
-    },
-    "sqlite": {
-        "file": "housekeeping.db",
-        "driver": "sqlite"
-    }
-}
+# Database configuration using environment variables
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "rootpassword")
+DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
+DB_PORT = os.getenv("DB_PORT", "3306")
+DB_NAME = os.getenv("DB_NAME", "housekeeping")
 
-class DatabaseFactory:
+class DatabaseManager:
     """
-    Factory class to create SQLAlchemy engine and session.
-    Supports multiple database types.
+    Manager class to create SQLAlchemy engine and session.
+    Uses MySQL as the only supported database.
     """
 
     @staticmethod
-    def create_engine_and_session(db_type: str = "mysql"):
-        if db_type not in DATABASES:
-            raise ValueError(f"Unsupported database type: {db_type}")
-
-        config = DATABASES[db_type]
-
-        if db_type == "mysql":
-            url = f"{config['driver']}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db_name']}?charset=utf8mb4"
-        elif db_type == "sqlite":
-            url = f"{config['driver']}:///{config['file']}"
-        else:
-            raise ValueError(f"Unsupported database type: {db_type}")
+    def create_engine_and_session():
+        url = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
         engine = create_engine(
             url,
@@ -51,8 +33,8 @@ class DatabaseFactory:
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         return engine, SessionLocal
 
-# Example: create default MySQL engine and session
-engine, SessionLocal = DatabaseFactory.create_engine_and_session("mysql")
+# Create engine and session
+engine, SessionLocal = DatabaseManager.create_engine_and_session()
 
 # Dependency for FastAPI
 def get_db() -> Generator:

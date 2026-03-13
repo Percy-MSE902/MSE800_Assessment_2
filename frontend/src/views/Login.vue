@@ -45,7 +45,7 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    const res = await request.post('/api/auth/login', 
+    const res = await request.post('/auth/login', 
       new URLSearchParams({
         username: loginForm.value.username,
         password: loginForm.value.password
@@ -67,12 +67,7 @@ const handleLogin = async () => {
         localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
       }
       ElMessage.success('Login successful')
-      const redirect = route.query.redirect
-      if (redirect === 'portal') {
-        router.push('/')
-      } else {
-        router.push('/home')
-      }
+      router.push('/')
     }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Login failed')
@@ -89,7 +84,7 @@ const handleVerify2FA = async () => {
 
   loading.value = true
   try {
-    const res = await request.post('/api/auth/login-with-2fa', {
+    const res = await request.post('/auth/login-with-2fa', {
       username: loginForm.value.username,
       password: loginForm.value.password,
       code: verifyCode.value
@@ -97,7 +92,7 @@ const handleVerify2FA = async () => {
     
     localStorage.setItem('token', res.access_token)
     ElMessage.success('Login successful')
-    router.push('/dashboard')
+    router.push('/')
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Invalid verification code')
   } finally {
@@ -113,7 +108,7 @@ const handleRegister = async () => {
 
   loading.value = true
   try {
-    const res = await request.post('/api/auth/register', registerForm.value)
+    const res = await request.post('/auth/register', registerForm.value)
     
     if (res.requires_2fa) {
       qrCode.value = res.qr_code
@@ -123,7 +118,7 @@ const handleRegister = async () => {
     } else {
       ElMessage.success('Registration successful')
       localStorage.setItem('token', res.temp_token)
-      router.push('/dashboard')
+      router.push('/')
     }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.detail || 'Registration failed')
@@ -140,7 +135,7 @@ const handleVerifyRegister = async () => {
 
   loading.value = true
   try {
-    const res = await request.post('/api/auth/verify-2fa', null, {
+    const res = await request.post('/auth/verify-2fa', null, {
       params: {
         username: tempUsername.value,
         code: verifyCode.value

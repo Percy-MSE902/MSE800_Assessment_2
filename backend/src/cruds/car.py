@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from cruds.CRUDBase import CRUDBase
-from models.car import CarModel
+from model.car import CarModel
 from schemas.car import CarSchema, CarCreateSchema, CarUpdateSchema
 
 # --------------------------------------------------

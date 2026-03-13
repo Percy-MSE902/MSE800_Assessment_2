@@ -2,7 +2,11 @@ from pathlib import Path
 import importlib.util
 import sys
 from typing import List, Optional
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from .env file
+load_dotenv()
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import FileResponse
@@ -10,8 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from core.dependencies import get_current_user
-from apis.auth import auth_router
-from apis.portal import router as portal_router
+from api.auth import auth_router
+from api.portal import router as portal_router
 from init_db import init_database
 
 
@@ -26,7 +30,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,14 +60,14 @@ def include_routers_from_folder(folder: str = "api"):
         if hasattr(module, "router"):
             router = getattr(module, "router")
             app.include_router(router, dependencies=[Depends(get_current_user)])
-        
+
         if hasattr(module, "public_router"):
             app.include_router(module.public_router)
 
 
 app.include_router(auth_router)
 app.include_router(portal_router)
-include_routers_from_folder("apis")
+include_routers_from_folder("api")
 
 @app.get("/health")
 async def root():
@@ -73,7 +77,7 @@ async def root():
 @app.on_event("startup")
 def startup_event():
     """"Initialize the database connection on application startup."""
-    init_database("mysql")
+    init_database()
 
 
 # @app.get("/pic/{id}")

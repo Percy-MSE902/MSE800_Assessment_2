@@ -1,5 +1,5 @@
 from cruds.CRUDBase import CRUDBase
-from models.booking import BookingModel
+from model.booking import BookingModel
 from schemas.booking import BookingCreateSchema, BookingUpdateSchema
 
 # --------------------------------------------------

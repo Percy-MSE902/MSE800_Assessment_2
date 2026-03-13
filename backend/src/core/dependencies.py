@@ -1,19 +1,19 @@
-from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer
-
-from cruds import CRUDBase
-from core.security import decode_access_token
-from fastapi.routing import compile_path
-
+# Standard library imports
 from typing import Type, TypeVar
-from fastapi import Depends
 
+# Third-party imports
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.routing import compile_path
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+
+# Local application imports
+from core.security import decode_access_token
 from database import get_db
-from models.user import UserModel
-from models.resource import ResourceModel
-from models.role_resource import RoleResourceModel
-from models.user_role import UserRoleModel  # adjust import
+from model.user import UserModel
+from model.resource import ResourceModel
+from model.role_resource import RoleResourceModel
+from model.user_role import UserRoleModel
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -47,7 +47,7 @@ def require_permission():
         path = request.url.path
         method = request.method.upper()
         print(current_user.status)
-      
+
         # Get user roles
         role_ids = db.query(UserRoleModel.role_id).filter(
             UserRoleModel.user_id == current_user.id
@@ -62,7 +62,7 @@ def require_permission():
             .join(RoleResourceModel, RoleResourceModel.resource_id == ResourceModel.id)\
             .filter(RoleResourceModel.role_id.in_(role_ids))\
             .all()
-        
+
         # print(f"Resources for roles: {resources} res_path: {path} res_method: {method}")
 
         # Check if current path + method matches any resource

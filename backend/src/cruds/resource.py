@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from cruds.CRUDBase import CRUDBase
-from models.resource import ResourceModel
+from model.resource import ResourceModel
 from schemas.resource import ResourceSchema, ResourceCreateSchema, ResourceUpdateSchema
 
 # --------------------------------------------------

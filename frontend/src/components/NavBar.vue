@@ -25,7 +25,9 @@ const menuItems = computed(() => {
   const role = userStore.userInfo?.role || 'guest'
   
   const adminMenus = [
-    { path: '/', title: 'Dashboard', icon: 'House' },
+    { path: '/home', title: 'Dashboard', icon: 'House' },
+    { path: '/admin-requirements', title: 'Requirements', icon: 'Document' },
+    { path: '/admin-tasks', title: 'Task Management', icon: 'List' },
     { path: '/orders', title: 'Orders', icon: 'Document' },
     { path: '/rooms', title: 'Rooms', icon: 'OfficeBuilding' },
     { path: '/staff', title: 'Staff', icon: 'UserFilled' },
@@ -36,16 +38,17 @@ const menuItems = computed(() => {
   ]
   
   const cleanerMenus = [
-    { path: '/', title: 'Dashboard', icon: 'House' },
-    { path: '/orders', title: 'My Tasks', icon: 'Document' },
+    { path: '/cleaner-tasks', title: 'My Tasks', icon: 'List' },
+    { path: '/orders', title: 'Orders', icon: 'Document' },
     { path: '/rooms', title: 'Rooms', icon: 'OfficeBuilding' },
     { path: '/wallet', title: 'My Wallet', icon: 'Wallet' },
     { path: '/notifications', title: 'Notifications', icon: 'Bell' }
   ]
   
   const guestMenus = [
-    { path: '/', title: 'Dashboard', icon: 'House' },
-    { path: '/orders', title: 'My Orders', icon: 'Document' },
+    { path: '/my-requirements', title: 'My Requirements', icon: 'Document' },
+    { path: '/my-bookings', title: 'My Bookings', icon: 'Calendar' },
+    { path: '/my-orders', title: 'My Orders', icon: 'Document' },
     { path: '/rooms', title: 'Rooms', icon: 'OfficeBuilding' },
     { path: '/wallet', title: 'My Wallet', icon: 'Wallet' },
     { path: '/notifications', title: 'Notifications', icon: 'Bell' }

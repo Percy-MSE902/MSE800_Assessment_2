@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, '/Users/liqingchao/workspace/assessment2/backend/src')
 
 from database import SessionLocal
-from models.room import RoomModel
+from model.room import RoomModel
 import random
 from datetime import datetime, timezone
 import base64
@@ -46,10 +46,10 @@ for i in range(5000):
     if room_num > 20:
         floor += 1
         room_num = 1
-    
+
     rt = random.choice(room_types)
     room_number_str = f"{floor}{str(room_num).zfill(3)}"
-    
+
     room = RoomModel(
         room_number=room_number_str,
         floor=floor,
@@ -66,7 +66,7 @@ for i in range(5000):
     )
     rooms.append(room)
     room_num += 1
-    
+
     if (i + 1) % 500 == 0:
         db.bulk_save_objects(rooms)
         db.commit()

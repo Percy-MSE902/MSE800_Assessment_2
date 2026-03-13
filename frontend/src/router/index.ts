@@ -5,7 +5,7 @@ const routes = [
     path: '/',
     name: 'Portal',
     component: () => import('@/views/Portal.vue'),
-    meta: { title: '洁到位 - 专业酒店清洁服务' }
+    meta: { title: 'CleanPro - Professional Cleaning Services' }
   },
   {
     path: '/login',
@@ -14,16 +14,58 @@ const routes = [
     meta: { title: 'Login' }
   },
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: () => import('@/views/Dashboard.vue'),
     meta: { title: 'Home', requiresAuth: true }
   },
   {
-    path: '/home',
-    name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
-    meta: { title: 'Home', requiresAuth: true }
+    path: '/my-tasks',
+    name: 'MyTasks',
+    component: () => import('@/views/MyTasks.vue'),
+    meta: { title: 'My Tasks', requiresAuth: true }
+  },
+  {
+    path: '/cleaner-tasks',
+    name: 'CleanerTasks',
+    component: () => import('@/views/CleanerTasks.vue'),
+    meta: { title: 'My Tasks', requiresAuth: true }
+  },
+  {
+    path: '/my-orders',
+    name: 'MyOrders',
+    component: () => import('@/views/MyOrders.vue'),
+    meta: { title: 'My Orders', requiresAuth: true }
+  },
+  {
+    path: '/my-requirements',
+    name: 'CustomerRequirements',
+    component: () => import('@/views/CustomerRequirements.vue'),
+    meta: { title: 'My Requirements', requiresAuth: true }
+  },
+  {
+    path: '/my-bookings',
+    name: 'CustomerBookings',
+    component: () => import('@/views/CustomerBookings.vue'),
+    meta: { title: 'My Bookings', requiresAuth: true }
+  },
+  {
+    path: '/tasks',
+    name: 'TaskManagement',
+    component: () => import('@/views/TaskManagement.vue'),
+    meta: { title: 'Task Management', requiresAuth: true }
+  },
+  {
+    path: '/admin-requirements',
+    name: 'AdminRequirements',
+    component: () => import('@/views/AdminRequirements.vue'),
+    meta: { title: 'Requirements Management', requiresAuth: true }
+  },
+  {
+    path: '/admin-tasks',
+    name: 'AdminTasks',
+    component: () => import('@/views/AdminTasks.vue'),
+    meta: { title: 'Task Management', requiresAuth: true }
   },
   {
     path: '/users',
@@ -89,7 +131,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   if (to.path === '/login' && token) {
-    next('/dashboard')
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    if (userInfo.role === 'admin' || userInfo.role === 'manager') {
+      next('/home')
+    } else if (['staff', 'cleaner', 'employee'].includes(userInfo.role)) {
+      next('/cleaner-tasks')
+    } else if (userInfo.role === 'guest') {
+      next('/my-requirements')
+    } else {
+      next('/')
+    }
   } else if (to.meta.requiresAuth && !token) {
     next('/login')
   } else {

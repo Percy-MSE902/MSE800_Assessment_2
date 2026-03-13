@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from cruds.CRUDBase import CRUDBase
-from models.role_resource import RoleResourceModel
+from model.role_resource import RoleResourceModel
 from schemas.role_resource import RoleResourceSchema, RoleResourceCreateSchema, RoleResourceUpdateSchema
 
 # --------------------------------------------------

@@ -28,7 +28,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if self.has_soft_delete:
             query = query.filter(self.model.is_deleted == 0)
         return query
-    
+
     def get_all(self, session:Session):
         return self._base_query(session).all()
 
@@ -48,10 +48,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def get_multi(self, session: Session, skip: int = 0, limit: int = 10, **filters):
         query = self._base_query(session)
-        
+
         if filters:
             query = query.filter_by(**filters)
-            
+
         total_count = query.count()
         data = query.offset(skip).limit(limit).all()
         return total_count, data
@@ -92,7 +92,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> Tuple[int, List[ModelType]]:
 
         query = self._base_query(session)
-       
+
         if filters:
             for field, value in filters.items():
                 if value is None or value == '':

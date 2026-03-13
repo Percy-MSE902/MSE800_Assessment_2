@@ -34,14 +34,20 @@ Note: Backend uses MySQL. Ensure MySQL is running and configured in `database.py
 #### Imports
 Standard library first, then third-party, then local. Use absolute imports:
 ```python
+# Standard library imports
+import random
+from datetime import datetime
+from typing import List, Optional
+
+# Third-party imports
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from database import get_db
-from models.user import UserModel
-from core.dependencies import get_current_user
+
+# Local application imports
+from model.user import UserModel
 from schemas.user import UserSchema
-from cruds.CRUDBase import CRUDBase
+from service.user import UserService
+from core.dependencies import get_current_user
 ```
 
 #### Naming
@@ -55,6 +61,30 @@ Always use type hints. Use `Optional[X]` instead of `X | None`:
 def get_user(user_id: int, db: Session = Depends(get_db)) -> Optional[UserModel]:
     ...
 ```
+
+#### Pylint 4.1.0-dev0 Standard
+
+All Python files MUST pass Pylint 4.1.0-dev0 standard. Run pylint before committing:
+```bash
+cd backend/src
+python -m pylint --rcfile=../.pylintrc <your_file>.py
+```
+
+Key rules:
+- **Import order**: Standard library → Third-party → Local application
+- **No trailing whitespace**: Remove all trailing spaces
+- **Line length**: Max 120 characters
+- **No bare except**: Use `except (ValueError, TypeError):` instead of `except:`
+- **Use `is None`** instead of `== None`
+- **No duplicate imports**: Don't re-import modules inside functions
+- **Docstrings**: Add docstrings to all classes and public methods
+- **No function redefinition**: Don't define same method name twice in a class
+
+Before finishing any task:
+1. Run pylint on all modified files
+2. Fix all errors
+3. Test the API/feature works
+4. Restart both frontend and backend
 
 #### SQLAlchemy Models
 Use `Mapped` and `mapped_column`. Define `__tablename__` explicitly. Use soft deletes:

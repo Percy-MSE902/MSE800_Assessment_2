@@ -30,17 +30,18 @@ export const useUserStore = defineStore('user', () => {
         userInfo.value = { 
           id: currentUser.id,
           username: currentUser.username, 
-          role: currentUser.role 
+          role: currentUser.role,
+          phone: currentUser.phone || ''
         }
       } else {
         const payload = JSON.parse(atob(res.access_token.split('.')[1]))
-        userInfo.value = { username: payload.sub, role: 'guest' }
+        userInfo.value = { username: payload.sub, role: 'guest', phone: '' }
       }
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     } catch (e) {
       console.error('Failed to fetch user info:', e)
       const payload = JSON.parse(atob(res.access_token.split('.')[1]))
-      userInfo.value = { username: payload.sub, role: 'guest' }
+      userInfo.value = { username: payload.sub, role: 'guest', phone: '' }
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     }
     
@@ -61,10 +62,11 @@ export const useUserStore = defineStore('user', () => {
         userInfo.value = { 
           id: currentUser.id,
           username: currentUser.username, 
-          role: currentUser.role 
+          role: currentUser.role,
+          phone: currentUser.phone || ''
         }
       } else {
-        userInfo.value = { username: username, role: 'guest' }
+        userInfo.value = { username: username, role: 'guest', phone: '' }
       }
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     } catch (e) {
